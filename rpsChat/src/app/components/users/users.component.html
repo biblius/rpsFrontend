@@ -1,0 +1,8 @@
+<h1>Browse users</h1>
+<h2 class="error-msg" *ngIf="errorMessage">
+    Please <a routerLink="/login">login</a> to continue
+</h2>
+
+<div *ngIf="!errorMessage" class="users-list">
+    <app-user-dash class="user-dash" *ngFor="let user of users" [user]="user"></app-user-dash>
+</div>

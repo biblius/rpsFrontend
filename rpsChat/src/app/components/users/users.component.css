@@ -1,0 +1,23 @@
+.users-list {
+    display: flex;
+    justify-content: space-around;
+    gap: 0.3rem;
+    flex-flow: row wrap;
+    overflow-wrap: break-word;
+}
+
+.user-dash {
+    background-color: var(--bg-main-black);
+    font-size: 1.5ch;
+    margin: 0.1rem;
+    width: 30%;
+}
+
+.error-msg {
+    margin: 3rem auto 0 auto;
+    text-align: center;
+}
+
+.error-msg a {
+    color: var(--link-main-red);
+}

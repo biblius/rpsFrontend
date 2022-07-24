@@ -1,0 +1,41 @@
+
+@keyframes popInOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+h4 {
+    font-size: 1.7ch;
+    width: 100%;
+    margin: 0;
+}
+
+.dash-icons {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.online-status {
+    margin: 0;
+    align-items: center;
+    width: fit-content;
+}
+
+.online-status {
+    font-size: 1ch;
+}
+
+.new-messages {
+    margin-right: 0.3rem;
+    justify-self: flex-end;
+    font-size: 1.5ch;
+    display: flex;
+    align-items: center;
+    animation: popInOut 1500ms steps(2, end) 0s infinite;
+}

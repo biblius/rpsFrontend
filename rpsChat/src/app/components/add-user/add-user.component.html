@@ -1,0 +1,11 @@
+<form [formGroup] = "credentialsForm" (ngSubmit)="submitCredentials()">
+    <div class="form-control">
+        <label for="username">Username</label>
+        <input type="text" name="username" id="username" formControlName="username">
+    </div>
+    <div class="form-control">
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" formControlName="password">
+    </div>
+    <input type="submit" value="Submit">
+</form>
