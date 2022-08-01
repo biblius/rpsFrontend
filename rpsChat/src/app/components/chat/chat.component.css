@@ -142,7 +142,9 @@
     height: 3rem;
 }
 
-/** RPS ROOMS **/
+/*
+*================ RPS ROOMS =====================
+*/
 
 .challenge-room .versus {
     display: flex;
@@ -154,7 +156,7 @@
 }
 
 .challenge-room .versus p {
-    width: 30%;
+    width: 100%;
     letter-spacing: 0.1ch;
     font-family: 'Metal Mania', cursive;
 }

@@ -5,17 +5,51 @@ import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { ChatUser, isInstanceOfChatUser } from 'src/interfaces/chatUser';
 import { isInstanceOfRoom, Room } from 'src/interfaces/room';
 import { isInstanceOfRPS } from 'src/interfaces/rps';
+import { animate, style, transition, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-chat-box',
   templateUrl: './chat-box.component.html',
-  styleUrls: ['./chat-box.component.css']
+  styleUrls: ['./chat-box.component.css'],
+  animations: [
+    trigger('toggleBox', [
+      transition(':enter', [
+        style({
+          width: '0%'
+        }),
+        animate("100ms 100ms", style({ width: '100%' }))
+      ]),
+      transition(':leave', [
+        style({
+          width: '100%'
+        }),
+        animate("100ms 100ms", style({ width: '0%' }))
+      ])
+    ]),
+
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({
+          opacity: '0%'
+        }),
+        animate("100ms 200ms", style({ opacity: '1' }))
+      ]),
+      transition(':leave', [
+        style({
+          opacity: '100%'
+        }),
+        animate("100ms", style({ opacity: '0' }))
+      ]),
+    ]),
+
+  ]
 })
+
 export class ChatBoxComponent implements OnInit {
   @Input() activeUser!: ChatUser;
   @Input() selected?: ChatUser | Room;
   @Input() messages: ChatMessage[] = [];
-  @Input() ggScoreSelector!: number;
+  @Input() ggScoreSelector: number = 3;
   @Input() isInRoom!: Function;
   @Input() getRPSEntries!: Function;
 

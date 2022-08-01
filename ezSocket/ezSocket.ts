@@ -100,7 +100,7 @@ export class EZSocket {
                 return;
             }
             const header = message.header;
-            console.log('%Header: ', 'background: #AAF; color: #000', header);
+            console.log('%cHeader: ', 'background: #AAF; color: #000', header);
             console.log('%cData: ', 'background: #AAA; color: #000', message.data);
             if (this.isDirective(header)) {
                 const func = Object.getOwnPropertyDescriptor(this.callbackMap, header)!;
