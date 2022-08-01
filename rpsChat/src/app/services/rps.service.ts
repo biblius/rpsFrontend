@@ -1,15 +1,10 @@
-import { RPSMessage } from '../../interfaces/messages';
+import { MessageService } from 'src/app/services/message.service';
+import { RPSData, RpsResolve } from '../../interfaces/rps';
 import { WsMessage } from '../../interfaces/messages';
 import { SocketService } from './socket.service';
-import { EZSocket } from '../../../../ezSocket/ezSocket';
-import { ChatUser } from '../../interfaces/chatUser'
-import { Room } from '../../interfaces/room'
-import { UsersService } from './users.service';
 import { Subject, BehaviorSubject, } from 'rxjs';
 import { Injectable } from "@angular/core";
-import { environment } from 'src/environments/environment';
 import { RPS, RPSManager } from 'src/interfaces/rps';
-import { RPSData } from '../../interfaces/messages';
 
 @Injectable({
   providedIn: 'root'
@@ -20,10 +15,12 @@ export class RpsService {
   rpsRoomsSubject = new BehaviorSubject<Map<string, RPS>>(this.rpsRooms);
 
   choiceSubject = new Subject<Map<string, 'r' | 'p' | 's' | 'x'>>();
-  winnerSubject = new Subject<string[] | undefined>();
+  resolveSubject = new Subject<RpsResolve>();
+  ggSubject = new Subject<boolean>();
   resetSubject = new Subject<RPS>();
+  excludeSubject = new Subject<string[]>();
 
-  constructor(private socketService: SocketService) {
+  constructor(private socketService: SocketService, private messageService: MessageService) {
     const ez = socketService.ez();
 
     ez.register('rps', (message: WsMessage<RPS>) => {
@@ -50,17 +47,29 @@ export class RpsService {
           this.choiceSubject.next(game.choices);
         }
 
-        if (event.Winners) {
-          const winners = event.Winners;
-          this.winnerSubject.next(winners);
-          for (const winner of winners) {
-            let score = game.scores.get(winner)!;
-            game.scores.set(winner, score + 1);
+        if (event.Exclude) {
+          const excluded = event.Exclude;
+          for (const id of excluded) {
+            game.excluded.add(id)
           }
-          game.choices.clear();
-          setTimeout(() => {
-            this.resetSubject.next(game);
-          }, game.fastMode ? 750 : 1500);
+          this.resolveSubject.next({ Exclude: excluded });
+          this.resetChoices(game);
+        }
+
+        if (event.Winner) {
+          const winner = event.Winner;
+          this.resolveSubject.next({ Winner: winner });
+
+          let score = game.scores.get(winner)!;
+          game.scores.set(winner, score + 1);
+          
+          game.excluded.clear();
+          this.resetChoices(game)
+        }
+
+        if (event.GG) {
+          game.gameOver = true;
+          this.ggSubject.next(true)
         }
         console.log('%crps -- state', 'background: #FA8; color: #000', game);
       }
@@ -82,9 +91,15 @@ export class RpsService {
     })
   }
 
+  private resetChoices(game: RPS) {
+    game.choices.clear();
+    setTimeout(() => {
+      this.resetSubject.next(game);
+    }, game.fastMode ? 750 : 1500);
+  }
 
-  sendChallenge(players: string[]) {
-    this.socketService.ez().send('rps', { Init: { host: this.socketService.getId(), players } });
+  sendChallenge(players: string[], gg_score: number) {
+    this.socketService.ez().send('rps', { Init: { host: this.socketService.getId(), players, gg_score } });
   }
 
   acceptChallenge(gameId: string) {
@@ -102,12 +117,4 @@ export class RpsService {
   chooseRPS(choice: 'r' | 'p' | 's' | 'x', gameId: string) {
     this.socketService.send('rps', { Action: { game_id: gameId, sender_id: this.socketService.getId(), action: { Choose: choice } } })
   }
-
-  resetChoices(roomId: string) {
-    // this.socket.emit('rps reset', roomId)
-  }
 }
-  //   this.socket.on('rps rooms', rpsRooms => {
-  //     this.rpsRooms = rpsRooms;
-  //     this.rpsRoomsSubject.next(this.rpsRooms);
-  //   })

@@ -1,0 +1,38 @@
+<!--Username tooltip-->
+<h5 class="username-sticky" *ngIf="selected">{{ isInstanceOfChatUser(selected) ? selected.username : selected.id }}</h5>
+
+<ul #messageList>
+    <!-- Messages -->
+    <li *ngFor="let message of messages; let i = index" class="message-container">
+        <div class="message"
+            [ngClass]="{lastMsg: messages[i+1] === undefined || message.senderId !== messages[i+1].senderId}">
+            <div class="message-body">
+                <p class="username"
+                    *ngIf="messages[i-1] === undefined || messages[i - 1].senderId !== message.senderId">
+                    <strong [ngClass]="{'sender-active': message.senderId === activeUser.id}">
+                        {{message.senderUsername === activeUser.username ? 'You: ' : message.senderUsername + ': '
+                        }}
+                    </strong>
+                </p>
+                <p class="content"> {{message.content}} </p>
+            </div>
+            <div class="read-status" *ngIf="message.receiverId && messages[i+1] === undefined">
+                <i class="material-icons" *ngIf="!message.read">check</i>
+                <i class="material-icons" *ngIf="message.read">check_circle</i>
+            </div>
+        </div>
+    </li>
+</ul>
+
+<!--Chat input-->
+<div class="chat-form" *ngIf="selected" [@fadeInOut]>
+    <form (ngSubmit)="sendMessage()"
+        *ngIf="(isInstanceOfRoom(selected) && isInRoom(selected)) || isInstanceOfChatUser(selected)" [@toggleBox]>
+        <input type="text" autocomplete="off" [(ngModel)]="messageContent" name="messageContent">
+        <button class="send-msg-btn"><span class="material-symbols-outlined">
+                double_arrow
+            </span></button>
+    </form>
+    <img class="vs-swords" src="../../../assets/swords-svgrepo-com.svg" (click)="sendChallenge()">
+    <!-- *ngIf="!challengeExists(selected.id)" -->
+</div>

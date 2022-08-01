@@ -9,6 +9,8 @@ export interface RPS {
     fastMode: boolean;
     winnerName?: string
     gameOver: boolean;
+    ggScore: number,
+    excluded: Set<string>
 }
 
 export class RPS implements RPS {
@@ -16,7 +18,7 @@ export class RPS implements RPS {
         this.choices.set(id, rps);
     }
     resetChoices() {
-        this.choices = new Map();
+        this.choices.clear();
     }
 }
 
@@ -28,6 +30,7 @@ export class RPSManager {
     static hash(rps: RPS): RPS {
         rps.playerIds = new Set(rps.playerIds);
         rps.connections = new Set(rps.connections);
+        rps.excluded = new Set(rps.excluded);
 
         const choices = new Map();
         for (const [key, value] of Object.entries(rps.choices)) {
@@ -48,4 +51,31 @@ export class RPSManager {
 
 export function isInstanceOfRPS(object: Object): object is RPS {
     return 'host' in object;
+}
+
+/**
+ * Data expected when sending (`Init`,`Action`) and receiving (`Update`,`State`, `Rooms`) `rps` messages.
+ */
+export type RPSData = {
+    Init?: { host: string, players: string[], gg_score: number },
+    Action?: { game_id: string, sender_id: string, action: any },
+    Update?: { game_id: string, event: Event },
+    State?: RPS,
+    Rooms?: RPS[]
+}
+/**
+ * Type of event we can receive from the server side RPS manager
+ */
+export type Event = {
+    PlayerConnected?: string,
+    FastToggled?: boolean,
+    Choices?: [string, 'r' | 'p' | 's' | 'x'][],
+    Winner?: string,
+    Exclude?: string[],
+    GG: string
+}
+
+export type RpsResolve = {
+    Exclude?: string[],
+    Winner?: string,
 }

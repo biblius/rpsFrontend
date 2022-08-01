@@ -3,8 +3,6 @@ import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http'
 import { ChatUser } from 'src/interfaces/chatUser';
 import { environment } from 'src/environments/environment';
-import { HttpParams } from '@angular/common/http';
-import { HttpHeaders } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'

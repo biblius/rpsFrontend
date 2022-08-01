@@ -1,10 +1,7 @@
-import { Router, NavigationEnd } from '@angular/router';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { User } from '../User';
 import { Observable, of, Subject, BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { FormGroup } from '@angular/forms';
 
 @Injectable({
   providedIn: 'root'

@@ -11,7 +11,7 @@
 <div class="choice-container">
     <!-- The active player's choice is always displayed -->
     <div *ngIf="isInGame(activeUser)">
-        <div [ngSwitch]="rps" class="choice">
+        <div [ngSwitch]="rps" class="choice" [ngClass]="{excluded: isExcluded(activeUser.id)}">
             <div class="chosen">
                 <img class="svg" *ngSwitchCase="'r'" src="../../../../assets/rock-svgrepo-com.svg">
                 <img class="svg" *ngSwitchCase="'p'" src="../../../../assets/paper-svgrepo-com.svg">
@@ -28,7 +28,8 @@
 
     <!-- When the game is unresolved-->
     <div *ngFor="let playerId of rpsGame.playerIds">
-        <div *ngIf="!showWinnerBanner && !isActive(playerId)" class="choice">
+        <div *ngIf="!showResolveBanner && !isActive(playerId)" class="choice"
+            [ngClass]="{excluded: isExcluded(playerId)}">
             <div class="chosen">
                 <h4>?¿?</h4>
             </div>
@@ -43,7 +44,8 @@
 
     <!-- When the game is resolved-->
     <div *ngFor="let choiceTup of choices">
-        <div *ngIf="showWinnerBanner && !isActive(choiceTup[0])" [ngSwitch]="choiceTup[1]" class="choice">
+        <div *ngIf="showResolveBanner && !isActive(choiceTup[0])" [ngSwitch]="choiceTup[1]" class="choice"
+            [ngClass]="{excluded: isExcluded(choiceTup[0])}">
             <div class="chosen">
                 <!-- RPS SVGs -->
                 <img class="svg" *ngSwitchCase="'r'" src="../../../../assets/rock-svgrepo-com.svg">
@@ -63,12 +65,19 @@
 </div>
 <!-- Pops in and out to display the winner of each game -->
 <div class="winner-banner">
-    <h4 *ngIf="showWinnerBanner">
-        {{displayWinnerNames(winners)}}
+    <h4 *ngIf="showResolveBanner">
+        {{resolveMessage}}
     </h4>
 </div>
 
-<div class="interact" *ngIf="isInGame(activeUser)">
+<!-- Pops in and out to display the winner of each game -->
+<div class="winner-banner">
+    <h4 *ngIf="showGgBanner">
+        {{ggBanner}}
+    </h4>
+</div>
+
+<div class="interact" *ngIf="isInGame(activeUser) && !rpsGame.gameOver">
 
     <p *ngIf="!checkConnections()">
         Waiting for opponents
@@ -77,8 +86,8 @@
     <button class="interact-btn enter" *ngIf="isInGame(activeUser) && !isConnected(activeUser)"
         (click)="acceptChallenge(rpsGame.id)">Commence Deathmatch</button>
 
-    <div class="button-container" *ngIf="checkConnections()" [attr.tabindex]="rpsGame.fastMode ? '0' : null"
-        (keyup)="onKey($event)" #interact>
+    <div class="button-container" *ngIf="checkConnections() && !isExcluded(activeUser.id)"
+        [attr.tabindex]="rpsGame.fastMode ? '0' : null" (keyup)="onKey($event)" #interact>
         <div class="tooltips">
             <p *ngIf="rpsGame.fastMode" class="btn-tooltip">1</p>
             <p *ngIf="rpsGame.fastMode" class="btn-tooltip">2</p>
@@ -102,7 +111,8 @@
 
 <div class="info">
 
-    <p class="waiting" [ngStyle]="{visibility: choiceFinalized && !showWinnerBanner ? 'visible' : 'hidden'}">Waiting for
+    <p class="waiting" [ngStyle]="{visibility: choiceFinalized && !showResolveBanner ? 'visible' : 'hidden'}">Waiting
+        for
         opponents...</p>
 
     <div class="fast-mode-container" *ngIf="userIs() === 'host'" (click)="toggleFast()">

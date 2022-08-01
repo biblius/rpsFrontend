@@ -18,46 +18,80 @@ export class RpsGameComponent implements OnInit {
 
   showOpponentChoices: boolean = false;
   choiceFinalized: boolean = false;
-  showWinnerBanner: boolean = false;
-  winners?: string[];
-  winnerSub: Subscription;
+  showResolveBanner: boolean = false;
+  resolveMessage?: string;
+  resolveSub: Subscription;
   resetSub: Subscription;
+  ggSub: Subscription;
+  showGgBanner: boolean = false;
+  ggBanner: string = 'It was a glorious battle';
 
   choices?: [string, 'r' | 'p' | 's' | 'x'][];
   choicesSub: Subscription;
-
-  delSub!: Subscription;
-  timeOut: number = 1500;
 
   pauseChoice: boolean = false;
   secretWord: string = '';
   kamenNajjaci: boolean = false;
 
   constructor(private rpsService: RpsService, private messageService: MessageService) {
-    this.winnerSub = this.rpsService.winnerSubject.subscribe(winners => {
-      this.winners = winners;
-      this.showWinnerBanner = true;
+    // When the winner is resolved, all players are included back to the game
+    // and the winner's username is displayed
+    this.resolveSub = this.rpsService.resolveSubject.subscribe(resolve => {
+
+      let displayMessage: string = '';
+
+      // Upon resolving each game, if the game has more than 2 players and more than 1 winner,
+      // put the losers in the excluded array until there's only 1 winner 
+      if (resolve.Exclude) {
+        if (resolve.Exclude.length === 0) {
+          displayMessage = 'You all suck!';
+        } else {
+          for (const id of resolve.Exclude) {
+            this.rpsGame.excluded.add(id);
+          }
+          const usernames = messageService.getUsernames(resolve.Exclude);
+          displayMessage = usernames.join(',') + ' need(s) to eat plenty more beans!';
+        }
+      }
+      if (resolve.Winner) {
+        displayMessage = messageService.getUsername(resolve.Winner) + ' wins!';
+        this.rpsGame.excluded.clear();
+      }
+      this.resolveMessage = displayMessage;
+      this.showResolveBanner = true;
       this.pauseChoice = true;
     })
 
+    // Received when all players have chosen, used only to the display each player's choice
+    // on game resolve
     this.choicesSub = this.rpsService.choiceSubject.subscribe(choices => {
       this.choices = Array.from(choices.entries());
     })
 
+    // Triggers shortly after the choices message is sent. Resets all utilites for displaying 
+    // the winner and player choices.
     this.resetSub = this.rpsService.resetSubject.subscribe(rps => {
       this.rpsGame = rps;
       delete this.rps;
-      delete this.winners;
+      delete this.resolveMessage;
       delete this.choices;
       this.choiceFinalized = false;
-      this.showWinnerBanner = false;
+      this.showResolveBanner = false;
       this.pauseChoice = false;
+    })
+
+    this.ggSub = this.rpsService.ggSubject.subscribe(_ => {
+      this.rpsGame.gameOver = true;
     })
   }
 
   ngOnInit(): void {
     this.checkFinalized();
     this.rps = this.rpsGame.choices.get(this.activeUser.id);
+    if (this.rpsGame.gameOver) {
+      this.showGgBanner = true;
+    }
+    
     console.log('RPSC -- USER IS :', this.userIs())
   }
 
@@ -95,16 +129,13 @@ export class RpsGameComponent implements OnInit {
     return this.rpsGame.scores.get(playerId)!;
   }
 
-  displayWinnerNames(winners: string[] | undefined): string {
-    if (!winners) {
-      return '';
+  displayWinnerName(winner: string | undefined): string | undefined {
+    if (winner) {
+      const name = this.messageService.getUsername(winner);
+      const message = name + ' wins!';
+      return message;
     }
-    if (winners.length === 0) {
-      return 'It\'s a draw!';
-    }
-    const names = this.messageService.getUsernames(winners);
-    const message = names.length > 1 ? names.join(', ') + ' win!' : names.join('') + ' wins!';
-    return message;
+    return;
   }
 
   isActive(playerId: string): boolean {
@@ -120,6 +151,10 @@ export class RpsGameComponent implements OnInit {
 
   isConnected(user: ChatUser): boolean {
     return this.rpsGame.connections.has(user.id);
+  }
+
+  isExcluded(playerId: string): boolean {
+    return this.rpsGame.excluded.has(playerId);
   }
 
   checkConnections(): boolean {

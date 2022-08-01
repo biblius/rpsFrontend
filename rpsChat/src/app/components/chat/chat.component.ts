@@ -1,8 +1,8 @@
 import { RpsService } from '../../services/rps.service';
-import { Room } from 'src/interfaces/room';
+import { Room, isInstanceOfRoom } from 'src/interfaces/room';
 import { ChatUser, isInstanceOfChatUser } from 'src/interfaces/chatUser';
-import { RPS } from 'src/interfaces/rps';
-import { ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { RPS, isInstanceOfRPS } from 'src/interfaces/rps';
+import { ElementRef, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Component, OnInit } from '@angular/core';
 import { MessageService } from 'src/app/services/message.service';
@@ -68,10 +68,13 @@ import { ChatMessage } from '../../../interfaces/messages';
 })
 
 
-export class ChatComponent implements OnInit, OnDestroy {
+export class ChatComponent implements OnInit {
   @ViewChild('messageList') messageList!: ElementRef;
 
-  messageContent!: string;
+  isInstanceOfChatUser = isInstanceOfChatUser;
+  isInstanceOfRoom = isInstanceOfRoom;
+  isInstanceOfRPS = isInstanceOfRPS;
+
   newRoomName!: string;
 
   activeUser!: ChatUser
@@ -83,6 +86,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   users: ChatUser[] = [];
   userMap: Map<string, ChatUser> = new Map();
   chatUsersSubscription!: Subscription;
+  
   selected?: ChatUser | Room;
   selectedRPS?: RPS;
 
@@ -91,6 +95,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   rpsRooms!: Map<string, RPS>;
   rpsRoomsSub!: Subscription;
+  ggScoreSelector: number = 3;
 
   showChat: boolean = false;
   showGame: boolean = false;
@@ -139,15 +144,6 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   toggleRoomForm(): void {
     this.showRoomForm = !this.showRoomForm;
-  }
-  isInstanceOfChatUser(object: Object): object is ChatUser {
-    return 'username' in object;
-  }
-  isInstanceOfRPS(object: Object): object is RPS {
-    return 'host' in object;
-  }
-  isInstanceOfRoom(object: Object): object is Room {
-    return 'users' in object
   }
 
   toggleSelected(selected: string) {
@@ -202,25 +198,6 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.selectedRPS = game;
       this.showGame = true;
     }
-  }
-
-  sendChallenge() {
-    if (this.selected && this.selected != this.activeUser) {
-      if (isInstanceOfChatUser(this.selected)) {
-        this.rpsService.sendChallenge([this.activeUser.id, this.selected.id])
-      } else if (this.isInstanceOfRoom(this.selected)) {
-        this.rpsService.sendChallenge(this.selected.users);
-      }
-    }
-  }
-
-  challengeExists(userId: string): boolean {
-    for (const [_, room] of this.getRPSEntries()) {
-      if (room.playerIds.has(userId) && room.playerIds.has(this.activeUser.id)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -278,20 +255,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   /*************MESSAGES*********************/
-  sendMessage() {
-    if (this.selected) {
-      const message: ChatMessage = {
-        id: `${(+new Date).toString(32)}`,
-        senderId: this.activeUser.id,
-        senderUsername: this.activeUser.username,
-        receiverId: this.selected.id,
-        content: this.messageContent,
-        read: false
-      }
-      this.messageService.sendMessage(message);
-      this.messageContent = '';
-    }
-  }
+
 
   displayMessages() {
     this.messageService.updateMessages();
@@ -299,10 +263,6 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   removeMessageNotification(user: ChatUser) {
     user.hasNewMessages = false;
-  }
-
-  ngOnDestroy(): void {
-    //this.messageService.disconnect();
   }
 
   /**

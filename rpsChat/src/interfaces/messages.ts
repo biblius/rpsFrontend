@@ -53,7 +53,8 @@ export interface ChatMessage {
     receiverId: string,
     senderUsername?: string
     content: string,
-    read: boolean
+    read: boolean,
+    timestamp?: Date
 }
 
 /**
@@ -65,37 +66,6 @@ export interface ServerChatMessage {
     receiver_id: string,
     content: string,
     read: boolean
-}
-
-export interface RPSMessage {
-    message: RPSData
-}
-
-export class RPSMessage implements RPSMessage {
-    constructor(data: RPSData) {
-        this.message = data;
-    }
-}
-
-/**
- * Data expected when sending (`Init`,`Action`) and receiving (`Update`,`State`) `rps` messages
- */
-export type RPSData = {
-    Init?: { host: string, players: string[] },
-    Action?: { game_id: string, sender_id: string, action: any },
-    Update?: { game_id: string, event: Event },
-    State?: RPS,
-    Rooms?: RPS[]
-}
-
-/**
- * Type of event we can receive from the chat server
- */
-export type Event = {
-    PlayerConnected?: string,
-    FastToggled?: boolean,
-    Choices?: [string, 'r' | 'p' | 's' | 'x'][],
-    Winners?: string[]
 }
 
 /**

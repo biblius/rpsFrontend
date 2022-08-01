@@ -21,6 +21,7 @@ import { ChatComponent } from './components/chat/chat.component';
 import { ChatUserDashComponent } from './components/chat/chat-user-dash/chat-user-dash.component';
 import { RoomDashComponent } from './components/chat/room-dash/room-dash.component';
 import { RpsGameComponent } from './components/chat/rps-game/rps-game.component';
+import { ChatBoxComponent } from './components/chat/chat-box/chat-box.component';
 
 const appRoutes: Routes = [
   { path: '', component: UsersComponent },
@@ -44,7 +45,8 @@ const appRoutes: Routes = [
     ChatComponent,
     ChatUserDashComponent,
     RoomDashComponent,
-    RpsGameComponent
+    RpsGameComponent,
+    ChatBoxComponent
   ],
   imports: [
     BrowserModule,

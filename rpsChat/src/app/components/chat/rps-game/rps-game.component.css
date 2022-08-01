@@ -60,6 +60,7 @@
     width: 1.2rem;
     filter: invert();
 }
+
 /********************* CHOICE CONTAINER ******************/
 
 .choice-container {
@@ -76,7 +77,7 @@
     justify-content: center;
     width: 5rem;
     height: 6rem;
-    border: 1px solid white;
+    border: 1px solid green;
     border-radius: 0.2rem;
 }
 
@@ -116,8 +117,9 @@
     height: 1rem;
 }
 
-.choice-username {
-
+.excluded {
+    border: 1px solid red;
+    border-radius: 0.2rem;
 }
 
 /************/

@@ -39,54 +39,13 @@
 
 </aside>
 
-<div class="chat-box" [ngClass]="{split: showGame}"
-    *ngIf="selected && (isInstanceOfChatUser(selected) || isInstanceOfRoom(selected))" [@toggleBox]>
+<!-- Chat Box-->
+<app-chat-box class="chat-box" [ngClass]="{split: showGame}"
+    *ngIf="selected && (isInstanceOfChatUser(selected) || isInstanceOfRoom(selected))" [messages]="messages"
+    [selected]="selected" [activeUser]="activeUser" [isInRoom]="isInRoom" [getRPSEntries]="getRPSEntries" [@toggleBox]>
+</app-chat-box>
 
-    <!--Username tooltip-->
-    <h5 class="username-sticky">{{ isInstanceOfChatUser(selected) ? selected.username : selected.id }}</h5>
-    <ul #messageList>
-        <!-- Messages -->
-        <li *ngFor="let message of messages; let i = index" class="message-container">
-            <div class="message"
-                [ngClass]="{lastMsg: messages[i+1] === undefined || message.senderId !== messages[i+1].senderId}">
-                <div class="message-body">
-                    <p class="username"
-                        *ngIf="messages[i-1] === undefined || messages[i - 1].senderId !== message.senderId">
-                        <strong [ngClass]="{'sender-active': message.senderId === activeUser.id}">
-                            {{message.senderUsername === activeUser.username ? 'You: ' : message.senderUsername + ': '
-                            }}
-                        </strong>
-                    </p>
-                    <p class="content"> {{message.content}} </p>
-                </div>
-                <div class="read-status" *ngIf="message.receiverId && messages[i+1] === undefined">
-                    <i class="material-icons" *ngIf="!message.read">check</i>
-                    <i class="material-icons" *ngIf="message.read">check_circle</i>
-                </div>
-            </div>
-        </li>
-    </ul>
-    <!--Chat input-->
-    <div class="chat-form" *ngIf="selected" [@fadeInOut]>
-        <form (ngSubmit)="sendMessage()"
-            *ngIf="(isInstanceOfRoom(selected) && isInRoom(selected)) || isInstanceOfChatUser(selected)" [@toggleBox]>
-            <input type="text" autocomplete="off" [(ngModel)]="messageContent" name="messageContent">
-            <button class="send-msg-btn"><span class="material-symbols-outlined">
-                    double_arrow
-                </span></button>
-        </form>
-        <img class="vs-swords" src="../../../assets/swords-svgrepo-com.svg"
-            *ngIf="!challengeExists(selected.id)" (click)="sendChallenge()">
-        <!-- If the selected item is a room -->
-        <button class="room-btn" *ngIf="isInstanceOfRoom(selected)" [ngSwitch]="isInRoom(selected)"
-            (click)="isInRoom(selected) ? leaveRoom(selected.id) : joinRoom(selected.id)"
-            [ngClass]="{'leave-btn': isInstanceOfRoom(selected) && isInRoom(selected)}">
-            <span *ngSwitchCase="true" class="material-symbols-outlined">login</span>
-            <span *ngSwitchCase="false" class="material-symbols-outlined">logout</span>
-        </button>
-    </div>
-</div>
-
+<!-- RPS Game Box -->
 <div class="game-box" *ngIf="selectedRPS" [@fadeInOut]>
     <app-rps-game class="rps-game" [activeUser]="activeUser" [rpsGame]="selectedRPS">
     </app-rps-game>

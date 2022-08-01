@@ -1,11 +1,11 @@
 import { RoomData } from '../../interfaces/messages';
 import { SocketService } from './socket.service';
 import { WsMessage, ChatMessage, ServerChatMessage } from '../../interfaces/messages';
-import { Subject, BehaviorSubject, } from 'rxjs';
+import { BehaviorSubject, mergeScan, } from 'rxjs';
 import { Injectable } from "@angular/core";
 import { ChatUser, isInstanceOfChatUser } from 'src/interfaces/chatUser';
-import { Room } from 'src/interfaces/room';
-
+import { isInstanceOfRoom, Room } from 'src/interfaces/room';
+import * as uuid from 'uuid';
 @Injectable({
   providedIn: 'root'
 })
@@ -23,7 +23,7 @@ export class MessageService {
    */
   activeUserId!: string;
   /**
- * Represents the currently selected user in the chat component.
+ * Represents the currently selected item in the chat component.
  */
   selected?: ChatUser | Room;
   /**
@@ -133,8 +133,12 @@ export class MessageService {
         ez.send('read', [this.genServerChatMessage(chatMessage)])
       }
 
-      this.messages.push(chatMessage);
-      this.updateMessages();
+      if (this.selected!.id === chatMessage.senderId
+        || this.activeUserId === chatMessage.senderId
+        || (isInstanceOfRoom(this.selected!) && this.selected.id === chatMessage.receiverId)) {
+        this.messages.push(chatMessage);
+        this.updateMessages();
+      }
     })
 
     /**
@@ -203,7 +207,14 @@ export class MessageService {
     // this.socket.emit('leave room', roomId);
   }
 
-  sendMessage(message: ChatMessage) {
+  sendMessage(text: string, receiverId: string) {
+    const message: ChatMessage = {
+      id: uuid.v4(),
+      senderId: this.activeUserId,
+      receiverId,
+      content: text,
+      read: false,
+    }
     this.socketService.send('chat_message', this.genServerChatMessage(message));
   }
 
@@ -249,7 +260,6 @@ export class MessageService {
     console.log('MESSAGE SERVICE : ', this.messages);
     this.messageSubject.next(this.messages);
   }
-
 
   /**
    * Utility method for generating `ServerChatMessage`, i.e. the type of message the server expects
